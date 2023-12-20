@@ -55,6 +55,15 @@ class ViewController: NSViewController, WKUIDelegate, WKScriptMessageHandler {
         
         if (response == "start_server") {
             bonjour.start()
+            bonjour.onPeerConnection = { peer in
+                print("Hello peer", peer)
+            }
+            bonjour.onPeerLoss = { peer in
+                print("Lost peer", peer)
+            }
+            bonjour.onPeerDisconnection = { peer in
+                print("Disconnected peer", peer)
+            }
             
         } else if (response == "start_server") {
             bonjour.stop()

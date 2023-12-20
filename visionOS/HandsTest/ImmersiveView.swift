@@ -27,7 +27,6 @@ struct ImmersiveView: View {
             simulatorHandTrackingProvider.addHands(content, anchorHead)
             
             addTestBall(content: content)
-                        
         }
     }
     
@@ -61,11 +60,7 @@ struct ImmersiveView: View {
         DispatchQueue.main.asyncAfter(deadline: .now()+0.5, execute: {
             addTestBall(content: content)
         })
-    }
-    
-    
-    
-    
+    }    
 }
 
 #Preview {
