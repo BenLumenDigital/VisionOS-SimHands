@@ -2,7 +2,12 @@
 
 This project aims to inject "real" hands into the Vision OS simulator.
 
-It does this by using 2 things:
+
+https://github.com/BenLumenDigital/VisionOS-SimHands/assets/53438826/70b8c02d-91ac-44bc-87b9-0db030a34b3d
+
+# How does this work
+
+It uses 2 things:
 
 1) A macOS helper app, with a bonjour service
 2) A Swift class for your VisionOS project which connects to the bonjour service
