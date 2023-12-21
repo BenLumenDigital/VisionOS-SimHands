@@ -114,14 +114,17 @@ class Hand {
     var normaliseDistance = 1.0                 // Calculation to let us normalise joint distances independantly of Z distance
     let distanceForJointsClose = 0.31
     let distanceForJointsApart = 0.75
+    
+    var normaliseRotation: SIMD3<Double>?       // Direction the hand is pointing in
 }
 
-class SimulatorHandTrackingProvider {
+class SimulatorHandTrackingProvider: ObservableObject {
     
     let bonjour = BonjourSession(configuration: .default)
     
-    var leftHand = Hand()
-    var rightHand = Hand()
+    @Published var leftHand = Hand()
+    @Published var rightHand = Hand()
+    @Published var timestamp: Double = 0
     
     public func start() {
         print("Starting Sim Hands")
@@ -270,20 +273,24 @@ class SimulatorHandTrackingProvider {
                 
             // Normalise hand joint positions locally to the hand
             // Not sure the best way to do this, but I've chosen to
-            // use the distance between the Wrist and bottom Thumb joint
-            // I figured this distance changes the least during different hand poses
+            // use the distance between the Wrist and Middle Finger Knuckle joint
+            // I figured this distance changes the least during different hand poses.
+            // It also gives us a pretty good idea of the hands orientation.
             if let wristJoint = hand.joints.filter({ $0.handPart == .wrist}).first,
-               let thumbKnuckle = hand.joints.filter({ $0.handPart == .thumbKnuckle}).first
+               let middleFingerKnuckle = hand.joints.filter({ $0.handPart == .middleFingerKnuckle}).first
             {
-                let distanceWristToThumbKnuckle = distance(wristJoint.position, thumbKnuckle.position)
+                let distanceWristToMiddleFingerKnuckle = distance(wristJoint.position, middleFingerKnuckle.position)
 
-                // Warning Magic number coming up, yikes!  This 6.3 is an average of the distance
+                // Warning Magic number coming up, yikes!  This 2.0 is an average of the distance
                 // of wrist->thumbKnuckle compared to wrist->middleFingerTip when extended.
                 // This should give us the maximum possible joint distance
-                let approximateWristToMiddleFinger = distanceWristToThumbKnuckle * 6.3
-                let normaliseToHandDelta = 1.0 / approximateWristToMiddleFinger
+                let approximateWristToMiddleFingerTip = distanceWristToMiddleFingerKnuckle * 2.0
+                let normaliseToHandDelta = 1.0 / approximateWristToMiddleFingerTip
                 
                 hand.normaliseDistance = normaliseToHandDelta
+                
+                // Get the general rotational pose of the hand
+                hand.normaliseRotation = normalize(cross(wristJoint.position, middleFingerKnuckle.position))
             }
             
             if checkPose_PeaceSign(hand: hand) {

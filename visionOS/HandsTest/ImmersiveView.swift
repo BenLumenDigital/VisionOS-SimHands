@@ -11,23 +11,28 @@ import RealityKitContent
 
 struct ImmersiveView: View {
     
-    let simulatorHandTrackingProvider = SimulatorHandTrackingProvider()
+    @ObservedObject var simulatorHandTrackingProvider = SimulatorHandTrackingProvider()
     
     let bonjour = BonjourSession(configuration: .default)
 
     let anchorHead = AnchorEntity(.head)
     
     var body: some View {
+        
         RealityView { content in
             
             anchorHead.anchoring.trackingMode = .continuous
             content.add(anchorHead)
-
+            
             simulatorHandTrackingProvider.start()
             simulatorHandTrackingProvider.addHands(content, anchorHead)
             
             addTestBall(content: content)
-        }
+            
+        } update: { updateContent in
+            // Access Hand data here
+            // ie: simulatorHandTrackingProvider.leftHand.handPose
+        }        
     }
     
     
@@ -60,7 +65,7 @@ struct ImmersiveView: View {
         DispatchQueue.main.asyncAfter(deadline: .now()+0.5, execute: {
             addTestBall(content: content)
         })
-    }    
+    }
 }
 
 #Preview {
