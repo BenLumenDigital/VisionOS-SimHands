@@ -189,7 +189,35 @@ class SimulatorHandTrackingProvider: ObservableObject {
     // Parse incoming JSON data into Swift Hand objects
     // Also, move the 3D spheres that represent Joints if there are any
     private func parseJointDataJson(anyObj:AnyObject, leftHand: Hand, rightHand: Hand) {
-         if anyObj is Array<AnyObject> {
+        let landmarks = anyObj["landmarks"]
+        let handednesses = anyObj["handednesses"]
+        
+        var firstHand: String?
+        var secondHand: String?
+        
+        // Get Chirality / Handednesses / Left/Right hand
+        // Call me crazy, but I'm certain the MediaPipes reports the hands incorrectly
+        // It tells you Left is Right and Right is Left!
+        for json in handednesses as! Array<AnyObject>{
+            let handsInfo = json as! Array<NSDictionary>
+            
+            for handInfo in handsInfo {
+                var handSide = handInfo["displayName"] as! String
+                if (handSide == "Left") {
+                    handSide = "Right"
+                } else if (handSide == "Right") {
+                    handSide = "Left"
+                }
+                
+                if (firstHand == nil) {
+                    firstHand = handSide
+                } else {
+                    secondHand = handSide
+                }
+            }
+        }
+        
+         if landmarks is Array<AnyObject> {
 
              DispatchQueue.main.async {
                  // Parse incoming joint data into Joints
@@ -203,7 +231,7 @@ class SimulatorHandTrackingProvider: ObservableObject {
                  
                  // Loop data and redraw joints
                  var handIndex = 0
-                 for json in anyObj as! Array<AnyObject>{
+                 for json in landmarks as! Array<AnyObject>{
                      let joints = json as? Array<NSDictionary>
                      var jointIndex = 0
                      for jointData in joints! {
@@ -218,7 +246,7 @@ class SimulatorHandTrackingProvider: ObservableObject {
                              
                              leftHand.joints[jointIndex] = joint
                              
-                             leftHand.chirality = "left"
+                             leftHand.chirality = firstHand ?? "unknown"
                              leftHand.handPose = .unknown
                              
                              if (!leftHand.models.isEmpty) {
@@ -241,7 +269,7 @@ class SimulatorHandTrackingProvider: ObservableObject {
                              
                              rightHand.joints[jointIndex] = joint
                              
-                             rightHand.chirality = "right"
+                             rightHand.chirality = secondHand ?? "unknown"
                              rightHand.handPose = .unknown
                              
                              if (!rightHand.models.isEmpty) {

@@ -293,7 +293,7 @@ async function predictWebcam() {
     // VisionSimHands
     // Push hand landmarks back to native code
     try {
-        webkit.messageHandlers.callback.postMessage(JSON.stringify(results.landmarks));
+        webkit.messageHandlers.callback.postMessage(JSON.stringify(results));
     } catch(err) {
         console.log('Can not reach native code');
     }
