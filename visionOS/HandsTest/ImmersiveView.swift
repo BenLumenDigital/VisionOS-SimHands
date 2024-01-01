@@ -44,6 +44,7 @@ struct ImmersiveView: View {
         let testBall = ModelEntity(mesh: .generateSphere(radius: radius))
             testBall.model?.materials = [SimpleMaterial(color: randomColor!, isMetallic: false)]
         testBall.position = SIMD3<Float>(x: xx, y: 0.8, z: -0.6)
+        testBall.name = "TestBall"
         
         let spherePhysics = PhysicsBodyComponent(
                                 massProperties: .default,

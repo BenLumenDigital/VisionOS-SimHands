@@ -126,6 +126,8 @@ class SimulatorHandTrackingProvider: ObservableObject {
     @Published var rightHand = Hand()
     @Published var timestamp: Double = 0
     
+    @State private var subs: [EventSubscription] = []   // For collision events
+    
     public func start() {
         print("Starting Sim Hands")
         
@@ -161,14 +163,29 @@ class SimulatorHandTrackingProvider: ObservableObject {
         // Create Hand Dots
         // The hand API gives us 21 positions per hand
         // So, create 21 models per hand to visualize the joints
-        for _ in 0...21 {
+        for index in 0...21 {
             let handLeftDot = getHandJointSphere(location: SIMD3<Float>(x: 0.0, y: 0.0, z: 0.0), color: .blue, radius: 0.03)
             handLeftDot.setParent(anchor)
+            handLeftDot.name = "Left - Joint \(index)"
             leftHand.models.append(handLeftDot)
             
             let handRightDot = getHandJointSphere(location: SIMD3<Float>(x: 0.0, y: 0.0, z: 0.0), color: .green, radius: 0.03)
             handRightDot.setParent(anchor)
+            handRightDot.name = "Right Hand - Joint \(index)"
             rightHand.models.append(handRightDot)
+            
+            let eventLeft = content.subscribe(to: CollisionEvents.Began.self, on: handLeftDot) { ce in
+                print("Left Collision between \(ce.entityA.name) and \(ce.entityB.name) has occured")
+            }
+            
+            let eventRight = content.subscribe(to: CollisionEvents.Began.self, on: handRightDot) { ce in
+                print("Right Collision between \(ce.entityA.name) and \(ce.entityB.name) has occured")
+            }
+            
+            Task {
+                subs.append(eventLeft)
+                subs.append(eventRight)
+            }
         }
     }
     
